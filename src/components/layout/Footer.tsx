@@ -1,8 +1,15 @@
 import Link from "next/link";
+import { cacheLife } from "next/cache";
 import { Leaf, Mail, Phone, MapPin } from "lucide-react";
 
-export function Footer() {
-  const currentYear = new Date().getFullYear();
+async function getCurrentYear() {
+  "use cache";
+  cacheLife("days");
+  return new Date().getFullYear();
+}
+
+export async function Footer() {
+  const currentYear = await getCurrentYear();
 
   return (
     <footer className="bg-raf-forest text-raf-cream pt-16 pb-8 border-t border-raf-forest/10">

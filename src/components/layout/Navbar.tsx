@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X, Leaf } from "lucide-react";
@@ -16,9 +16,34 @@ const NAV_LINKS = [
   { name: "Resources", href: "/resources" },
 ];
 
+function DesktopNavigation({ pathname }: { pathname?: string }) {
+  return (
+    <nav className="hidden lg:flex items-center gap-8">
+      {NAV_LINKS.map((link) => {
+        const isActive = pathname === link.href || (link.href !== "/" && pathname?.startsWith(link.href));
+        return (
+          <Link
+            key={link.name}
+            href={link.href}
+            className={`text-sm font-medium transition-colors hover:text-raf-terracotta ${
+              isActive ? "text-raf-forest font-semibold" : "text-raf-charcoal/80"
+            }`}
+          >
+            {link.name}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
+
+function ActiveDesktopNavigation() {
+  const pathname = usePathname();
+  return <DesktopNavigation pathname={pathname} />;
+}
+
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
-  const pathname = usePathname();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -46,22 +71,9 @@ export function Navbar() {
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden lg:flex items-center gap-8">
-          {NAV_LINKS.map((link) => {
-            const isActive = pathname === link.href || (link.href !== "/" && pathname?.startsWith(link.href));
-            return (
-              <Link
-                key={link.name}
-                href={link.href}
-                className={`text-sm font-medium transition-colors hover:text-raf-terracotta ${
-                  isActive ? "text-raf-forest font-semibold" : "text-raf-charcoal/80"
-                }`}
-              >
-                {link.name}
-              </Link>
-            );
-          })}
-        </nav>
+        <Suspense fallback={<DesktopNavigation />}>
+          <ActiveDesktopNavigation />
+        </Suspense>
 
         {/* Desktop Actions */}
         <div className="hidden lg:flex items-center gap-4">
@@ -76,11 +88,13 @@ export function Navbar() {
         {/* Mobile Navigation */}
         <div className="lg:hidden">
           <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="Open menu" className="text-raf-forest">
-                <Menu className="h-6 w-6" />
-              </Button>
-            </SheetTrigger>
+            <SheetTrigger
+              render={
+                <Button variant="ghost" size="icon" aria-label="Open menu" className="text-raf-forest">
+                  <Menu className="h-6 w-6" />
+                </Button>
+              }
+            />
             <SheetContent side="right" className="bg-raf-cream border-l-raf-charcoal/10 flex flex-col">
               <SheetTitle className="sr-only">Mobile Navigation Menu</SheetTitle>
               <div className="flex items-center gap-2 mb-8 mt-4">
